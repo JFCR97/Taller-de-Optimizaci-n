@@ -1,0 +1,60 @@
+import numpy as np
+from scipy.optimize import minimize
+
+# ==========================================
+# PASO 1 y 2: FUNCIÓN OBJETIVO Y VARIABLES
+# ==========================================
+# x[0] = radio (r)
+# x[1] = altura (h)
+
+def funcion_objetivo(x):
+    r, h = x
+    return np.pi * r**2 + 2 * np.pi * r * h
+
+# ==========================================
+# PASO 3: RESTRICCIÓN
+# ==========================================
+# Volumen fijo: pi*r^2*h = 1  -->  pi*r^2*h - 1 = 0
+
+def restriccion_volumen(x):
+    r, h = x
+    return np.pi * r**2 * h - 1
+
+restricciones = [{'type': 'eq', 'fun': restriccion_volumen}]
+
+# Límites físicos
+limites = ((1e-4, None),   # r > 0
+           (1e-4, None))   # h > 0
+
+# Punto inicial (factible)
+x_inicial = [0.5, 1.273]
+
+# ==========================================
+# PASO 4: RESOLUCIÓN
+# ==========================================
+resultado = minimize(
+    funcion_objetivo,
+    x_inicial,
+    method='SLSQP',
+    bounds=limites,
+    constraints=restricciones
+)
+
+# ==========================================
+# PASO 5: MOSTRAR RESULTADOS
+# ==========================================
+print("--- RESULTADOS DE LA OPTIMIZACIÓN ---")
+
+if resultado.success:
+    r_optimo, h_optimo = resultado.x
+    area_minima = resultado.fun
+    volumen_final = np.pi * r_optimo**2 * h_optimo
+
+    print(f"¡Solución encontrada en {resultado.nit} iteraciones!")
+    print(f"Radio óptimo:  {r_optimo:.4f} m")
+    print(f"Altura óptima: {h_optimo:.4f} m")
+    print(f"Área mínima:   {area_minima:.4f} m²")
+    print(f"Volumen final: {volumen_final:.6f} m³")
+    print(f"Error de volumen: {abs(volumen_final - 1):.6e}")
+else:
+    print("El solver no pudo encontrar una solución.")
